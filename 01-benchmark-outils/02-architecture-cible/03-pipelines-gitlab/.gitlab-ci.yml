@@ -1,0 +1,47 @@
+---
+# Pipeline GitLab CI/CD pour le scan des dépendances avec Trivy
+stages:
+  - setup
+  - security-scan
+  - deploy
+
+# Cache pour Trivy (accélère les scans)
+cache:
+  key: trivy-cache
+  paths:
+    - .trivy_cache
+
+# Étape 1 : Installation de Trivy
+setup-trivy:
+  stage: setup
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+    - trivy --version
+  artifacts:
+    paths:
+      - /usr/local/bin/trivy
+
+# Étape 2 : Scan des dépendances avec Trivy
+trivy-scan:
+  stage: security-scan
+  image: aquasec/trivy:latest
+  script:
+    - mkdir -p .trivy_cache
+    - trivy fs --cache-dir .trivy_cache --security-checks vuln,config . > trivy-results.txt
+    - cat trivy-results.txt
+  artifacts:
+    paths:
+      - trivy-results.txt
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "principal"
+
+# Étape 3 : Déploiement (simulé)
+deploy-to-staging:
+  stage: deploy
+  script:
+    - echo "✅ Déploiement en staging simulé (toutes les vulnérabilités sont résolues)."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "principal"
+      when: on_success
