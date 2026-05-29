@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Rapports de scan (conserver ceux du POC)
+*.txt
+!05-poc/**/*.txt
+
+# Cache Trivy
+.trivy_cache/
