@@ -1,0 +1,45 @@
+---
+# Pipeline pour le POC Node.js
+stages:
+  - install
+  - security
+  - test
+
+# Étape 1 : Installation des dépendances Node.js
+install:
+  stage: install
+  image: node:18-alpine
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+
+# Étape 2 : Scan avec Trivy
+trivy-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs --security-checks vuln . > trivy-report.txt
+    - cat trivy-report.txt
+  artifacts:
+    paths:
+      - trivy-report.txt
+
+# Étape 3 : Scan avec npm audit
+npm-audit:
+  stage: security
+  image: node:18-alpine
+  script:
+    - npm audit --audit-level=high > npm-audit-report.txt
+    - cat npm-audit-report.txt
+  artifacts:
+    paths:
+      - npm-audit-report.txt
+
+# Étape 4 : Tests (simulés)
+test:
+  stage: test
+  image: node:18-alpine
+  script:
+    - echo "✅ Tests passés (simulés)."
