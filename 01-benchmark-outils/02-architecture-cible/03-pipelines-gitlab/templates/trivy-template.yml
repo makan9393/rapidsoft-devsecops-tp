@@ -1,0 +1,12 @@
+# Template réutilisable pour Trivy
+trivy-scan:
+  stage: security-scan
+  image: aquasec/trivy:latest
+  script:
+    - mkdir -p .trivy_cache
+    - trivy fs --cache-dir .trivy_cache --security-checks vuln,config . > trivy-results.txt
+  artifacts:
+    paths:
+      - trivy-results.txt
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "principal"
